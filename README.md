@@ -5,7 +5,6 @@ Fonctionnalités : CRUD des articles, commentaires en lecture seule.
 CRUD compte
 CRUD poste
 
-
 internaute :
  - pas de clé personelle
  - consulte les posts + filtrage (par utilisateur/par topic) (peut consulter un seul blog par titre)
@@ -24,3 +23,6 @@ admin : special key hardcoded for all admins
  - see all the keys of users, posts etc
  - delete any user any post change anything
 
+todo:
+    add comments and link them with posts
+    add users and links them with posts
