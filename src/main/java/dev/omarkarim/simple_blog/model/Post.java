@@ -1,5 +1,6 @@
 package dev.omarkarim.simple_blog.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.ElementCollection;
@@ -15,18 +16,23 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
+    private String author;
     private String content;
+    private String date;
 
     @ElementCollection
     private List<String> tags;
 
     public Post() {
+        this.date = java.time.LocalDate.now().toString();
     }
 
-    public Post(String title, List<String> tags, String content) {
+    public Post(String title, String author, List<String> tags, String content) {
         this.title = title;
+        this.author = author;
         this.tags = tags;
         this.content = content;
+        this.date = java.time.LocalDate.now().toString();
     }
 
     public Long getId() {
@@ -38,6 +44,13 @@ public class Post {
     }
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public List<String> getTags() {
@@ -52,5 +65,9 @@ public class Post {
     }
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getDate() {
+        return date;
     }
 }

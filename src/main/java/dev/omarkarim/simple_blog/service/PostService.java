@@ -23,6 +23,14 @@ public class PostService {
         return postRepository.findById(id);
     }
 
+    public List<Post> getPostsByAuthor(String author) {
+        return postRepository.findByAuthor(author);
+    }
+
+    public List<Post> getPostsByTitle(String title) {
+        return postRepository.findByTitle(title);
+    }
+
     public List<Post> getPostsByTags(List<String> tags) {
         return postRepository.findByTags(tags, tags.size());
     }
@@ -33,8 +41,15 @@ public class PostService {
 
     public Post updatePost(Long id, Post updatedPost) {
         return postRepository.findById(id).map(post -> {
-            post.setTitle(updatedPost.getTitle());
-            post.setContent(updatedPost.getContent());
+            if (updatedPost.getTitle() != null && !updatedPost.getTitle().isEmpty()) {
+                post.setTitle(updatedPost.getTitle());
+            }
+            if (updatedPost.getContent() != null && !updatedPost.getContent().isEmpty()) {
+                post.setContent(updatedPost.getContent());
+            }
+            if (updatedPost.getTags() != null && !updatedPost.getTags().isEmpty()) {
+                post.setTags(updatedPost.getTags());
+            }
             return postRepository.save(post);
         }).orElseThrow(() -> new RuntimeException("Post not found with id " + id));
     }
