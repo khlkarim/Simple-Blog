@@ -6,8 +6,6 @@ import dev.omarkarim.simple_blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/blog/users")
 public class UserController {
@@ -18,18 +16,15 @@ public class UserController {
     private PostService postService;
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public Object getUsers(@RequestParam(required = false) String apikey, @RequestParam(required = false) String username) {
+        if (apikey != null) {
+            return userService.getUserById(apikey).orElseThrow(() -> new RuntimeException("User not found with apikey " + apikey));
+        }
+        if (username != null) {
+            return userService.getUserByUsername(username).orElseThrow(() -> new RuntimeException("User not found with username " + username));
+        }
+
         return userService.getAllUsers();
-    }
-
-    @GetMapping("/apikey")
-    public User getUserByKey(@RequestParam String apikey) {
-        return userService.getUserById(apikey).orElseThrow(() -> new RuntimeException("User not found with apikey " + apikey));
-    }
-
-    @GetMapping("/username")
-    public User getUserByUsername(@RequestParam String username) {
-        return userService.getUserByUsername(username).orElseThrow(() -> new RuntimeException("User not found with username " + username));
     }
 
     @PostMapping
