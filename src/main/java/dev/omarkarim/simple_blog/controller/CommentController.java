@@ -36,9 +36,9 @@ public class CommentController {
         return commentService.getCommentsByPostId(postId);
     }
 
-    @PostMapping("/{apiKey}/{postId}")
-    public Comment createComment(@PathVariable String apiKey, @PathVariable Long postId, @RequestBody Comment comment) {
-        return commentService.createComment(apiKey, postId, comment)
+    @PostMapping("/{postId}")
+    public Comment createComment(@RequestParam String apikey, @PathVariable Long postId, @RequestBody Comment comment) {
+        return commentService.createComment(apikey, postId, comment)
                 .orElseThrow(() -> new NoSuchElementException("Failed to create comment for postId " + postId));
     }
 

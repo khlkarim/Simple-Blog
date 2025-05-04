@@ -22,12 +22,12 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    @GetMapping("/{apikey}")
-    public User getUserByKey(@PathVariable String apikey) {
+    @GetMapping("/apikey")
+    public User getUserByKey(@RequestParam String apikey) {
         return userService.getUserById(apikey).orElseThrow(() -> new RuntimeException("User not found with apikey " + apikey));
     }
 
-    @GetMapping("/")
+    @GetMapping("/username")
     public User getUserByUsername(@RequestParam String username) {
         return userService.getUserByUsername(username).orElseThrow(() -> new RuntimeException("User not found with username " + username));
     }
@@ -37,16 +37,16 @@ public class UserController {
         return userService.createUser(user);
     }
 
-    @PatchMapping("/{apikey}")
-    public User updateUser(@PathVariable String apikey, @RequestBody User updatedUser) {
+    @PatchMapping
+    public User updateUser(@RequestParam String apikey, @RequestBody User updatedUser) {
         return userService.updateUser(apikey, updatedUser);
     }
 
-    @DeleteMapping("/{apikey}")
-    public boolean deleteUser(@PathVariable String apikey) {
-        User username = userService.getUserById(apikey).get();
+    @DeleteMapping
+    public boolean deleteUser(@RequestParam String apikey) {
+        User user = userService.getUserById(apikey).orElseThrow(() -> new RuntimeException("User not found with apikey " + apikey));
 
-        postService.getPostsByAuthor(username).forEach(post -> postService.deletePost(post.getId()));
+        postService.getPostsByAuthor(user).forEach(post -> postService.deletePost(post.getId()));
 
         return userService.deleteUser(apikey);
     }
