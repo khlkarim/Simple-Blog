@@ -1,38 +1,52 @@
 package dev.omarkarim.simple_blog.model;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "posts")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String title;
-    private String author;
     private String content;
-    private String date;
+    private LocalDate date;
 
     @ElementCollection
     private List<String> tags;
 
-    public Post() {
-        this.date = java.time.LocalDate.now().toString();
+    @ManyToOne
+    private User author;
+
+    @OneToMany(mappedBy = "post")
+    private List<Comment> comments;
+
+    public Post(){
+
     }
 
-    public Post(String title, String author, List<String> tags, String content) {
+    public Post(String title, String content, LocalDate date, List<String> tags, User author) {
+        this.id = null;
         this.title = title;
-        this.author = author;
-        this.tags = tags;
         this.content = content;
-        this.date = java.time.LocalDate.now().toString();
+        this.date = date != null ? date : LocalDate.now();
+        this.tags = tags != null ? List.copyOf(tags) : Collections.emptyList();
+        this.author = author;
     }
 
     public Long getId() {
@@ -42,32 +56,48 @@ public class Post {
     public String getTitle() {
         return title;
     }
+
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public List<String> getTags() {
-        return tags;
-    }
-    public void setTags(List<String> tags) {
-        this.tags = tags;
     }
 
     public String getContent() {
         return content;
     }
+
     public void setContent(String content) {
         this.content = content;
     }
 
-    public String getDate() {
+    public LocalDate getDate() {
         return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date != null ? date : LocalDate.now();
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags != null ? List.copyOf(tags) : Collections.emptyList();
+    }
+
+    public String getAuthor() {
+        return author.getUsername();
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }

@@ -5,7 +5,6 @@ Fonctionnalités : CRUD des articles, commentaires en lecture seule.
 CRUD compte
 CRUD poste
 
-
 internaute :
  - pas de clé personelle
  - consulte les posts + filtrage (par utilisateur/par topic) (peut consulter un seul blog par titre)
@@ -58,6 +57,8 @@ POST /api/blog/posts/{userkey} -> create a new post made by the user
 PATCH /api/blog/posts/{userkey}/{id} -> modify post information (cannot modify id, cannot modify creator username, cannot modify datetime)
 DELETE /api/blog/posts/{userkey}/{id} -> delete post
 
+merge the endpoints used for filtering into one endpoint
+
 comment:
 creator username
 post id
@@ -68,3 +69,10 @@ GET /api/blog/posts/comment/{id} -> get comments of post by id
 POST /api/blog/posts/comment/{id}/{userkey} -> post a comment
 PATCH /api/blog/posts/comment/{id}/{userkey} -> modify a comment (can only modify content)
 DELETE /api/blog/posts/comment/{id}/{userkey} -> delete a comment
+
+get comments by post 
+get comments by users
+level of validation checks
+user api key security
+
+create comment on post

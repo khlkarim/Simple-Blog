@@ -32,10 +32,8 @@ public class UserController {
         return userService.getUserByUsername(username).orElseThrow(() -> new RuntimeException("User not found with username " + username));
     }
 
-    @PostMapping("/{username}")
-    public User createUser(@PathVariable String username, @RequestBody User user) {
-        user.setUsername(username);
-
+    @PostMapping
+    public User createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 
@@ -46,7 +44,7 @@ public class UserController {
 
     @DeleteMapping("/{apikey}")
     public boolean deleteUser(@PathVariable String apikey) {
-        String username = userService.getUserById(apikey).get().getUsername();
+        User username = userService.getUserById(apikey).get();
 
         postService.getPostsByAuthor(username).forEach(post -> postService.deletePost(post.getId()));
 

@@ -5,7 +5,6 @@ import dev.omarkarim.simple_blog.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,23 +15,11 @@ public class UserService {
     private UserRepository userRepository;
 
     public List<User> getAllUsers() {
-        ArrayList <User> users = new ArrayList<>(userRepository.findAll());
-
-        for (User user : users) {
-            user.hideKey();
-        }
-
-        return users;
+        return userRepository.findAll();
     }
 
     public Optional<User> getUserByUsername(String username) {
-        Optional <User> u = userRepository.findUserByUsername(username);
-
-        if (u.isPresent()) {
-            u.get().hideKey();
-        }
-
-        return u;
+        return userRepository.findUserByUsername(username);
     }
 
     public User createUser(User user) {
@@ -45,17 +32,21 @@ public class UserService {
 
     public User updateUser(String id, User updatedUser) {
         return userRepository.findById(id).map(user -> {
-            if (updatedUser.getFullName() != null && !updatedUser.getFullName().isEmpty()) {
+            if (isValid(updatedUser.getFullName())) {
                 user.setFullName(updatedUser.getFullName());
             }
-            if (updatedUser.getEmail() != null && !updatedUser.getEmail().isEmpty()) {
+            if (isValid(updatedUser.getEmail())) {
                 user.setEmail(updatedUser.getEmail());
             }
-            if (updatedUser.getNumTel() != null && !updatedUser.getNumTel().isEmpty()) {
+            if (isValid(updatedUser.getNumTel())) {
                 user.setNumTel(updatedUser.getNumTel());
             }
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("User not found with id " + id));
+    }
+
+    private boolean isValid(String value) {
+        return value != null && !value.isEmpty();
     }
 
     public boolean deleteUser(String id) {
