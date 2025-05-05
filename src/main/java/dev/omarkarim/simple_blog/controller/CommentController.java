@@ -10,6 +10,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/blog/comments")
+@CrossOrigin(origins = "*")
 public class CommentController {
     
     @Autowired
@@ -22,8 +23,7 @@ public class CommentController {
 
     @GetMapping("/{id}")
     public Comment getCommentById(@PathVariable Long id) {
-        return commentService.getCommentById(id)
-                .orElseThrow(() -> new NoSuchElementException("Comment with id " + id + " not found"));
+        return commentService.getCommentById(id);
     }
 
     @GetMapping("/user/{username}")
@@ -38,8 +38,7 @@ public class CommentController {
 
     @PostMapping("/{postId}")
     public Comment createComment(@RequestParam String apikey, @PathVariable Long postId, @RequestBody Comment comment) {
-        return commentService.createComment(apikey, postId, comment)
-                .orElseThrow(() -> new NoSuchElementException("Failed to create comment for postId " + postId));
+        return commentService.createComment(apikey, postId, comment);
     }
 
     @PutMapping("/{id}")

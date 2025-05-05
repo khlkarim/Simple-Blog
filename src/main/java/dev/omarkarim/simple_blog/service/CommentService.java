@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 
 import dev.omarkarim.simple_blog.model.*;
 import dev.omarkarim.simple_blog.repository.*;
+import dev.omarkarim.simple_blog.exception.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CommentService {
@@ -25,52 +25,55 @@ public class CommentService {
         return commentRepository.findAll();
     }
 
-    public Optional<Comment> getCommentById(Long id) {
-        return commentRepository.findById(id);
+    public Comment getCommentById(Long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
     }
 
     public List<Comment> getCommentsByAuthor(String author) {
-        return userRepository.findUserByUsername(author)
-                .map(user -> commentRepository.findByAuthor(user))
-                .orElseThrow(() -> new RuntimeException("Author not found"));
+        User user = userRepository.findUserByUsername(author)
+                .orElseThrow(() -> new UserNotFoundException("Author not found"));
+        return commentRepository.findByAuthor(user);
     }
 
     public List<Comment> getCommentsByPostId(Long postId) {
-        return postRepository.findById(postId)
-                .map(post -> commentRepository.findByPost(post))
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found"));
+        return commentRepository.findByPost(post);
     }
 
-    public Optional<Comment> createComment(String apikey, Long postId, Comment comment) {
-        Optional<User> user = userRepository.findById(apikey);
-        Optional<Post> post = postRepository.findById(postId);
+    public Comment createComment(String apikey, Long postId, Comment comment) {
+        User user = userRepository.findById(apikey)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found"));
 
-        if (user.isPresent() && post.isPresent()) {
-            comment.setAuthor(user.get());
-            comment.setPost(post.get());
-            return Optional.of(commentRepository.save(comment));
-        } else {
-            return Optional.empty();
-        }
+        comment.setAuthor(user);
+        comment.setPost(post);
+        return commentRepository.save(comment);
     }
 
     public Comment updateComment(Long id, Comment updatedComment) {
-        return commentRepository.findById(id).map(comment -> {
-            comment.setContent(updatedComment.getContent());
-            
-            User author = userRepository.findUserByUsername(updatedComment.getAuthor())
-                    .orElseThrow(() -> new RuntimeException("Author not found"));
-            comment.setAuthor(author);
-            
-            Post post = postRepository.findById(updatedComment.getPost())
-                    .orElseThrow(() -> new RuntimeException("Post not found"));
-            comment.setPost(post);
-            
-            return commentRepository.save(comment);
-        }).orElseThrow(() -> new RuntimeException("Comment not found"));
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
+
+        comment.setContent(updatedComment.getContent());
+
+        User author = userRepository.findUserByUsername(updatedComment.getAuthor())
+                .orElseThrow(() -> new UserNotFoundException("Author not found"));
+        comment.setAuthor(author);
+
+        Post post = postRepository.findById(updatedComment.getPost())
+                .orElseThrow(() -> new PostNotFoundException("Post not found"));
+        comment.setPost(post);
+
+        return commentRepository.save(comment);
     }
 
     public void deleteComment(Long id) {
+        if (!commentRepository.existsById(id)) {
+            throw new CommentNotFoundException("Comment not found");
+        }
         commentRepository.deleteById(id);
     }
 }

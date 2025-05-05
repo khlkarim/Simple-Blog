@@ -1,13 +1,13 @@
 package dev.omarkarim.simple_blog.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import dev.omarkarim.simple_blog.model.*;
 import dev.omarkarim.simple_blog.repository.*;
+import dev.omarkarim.simple_blog.exception.*;
 
 @Service
 public class PostService {
@@ -22,8 +22,9 @@ public class PostService {
         return postRepository.findAll();
     }
 
-    public Optional<Post> getPostById(Long id) {
-        return postRepository.findById(id);
+    public Post getPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post not found with id " + id));
     }
 
     public List<Post> getPostsByAuthor(User author) {
@@ -35,11 +36,9 @@ public class PostService {
     }
 
     public List<Post> getPostsByTags(List<String> tags) {
-        return(
-            postRepository.findAll().stream()
-            .filter(post -> tags.stream().allMatch(tag -> post.getTags().contains(tag)))
-            .toList()
-        );
+        return postRepository.findAll().stream()
+                .filter(post -> tags.stream().allMatch(tag -> post.getTags().contains(tag)))
+                .toList();
     }
 
     public List<Post> filterPosts(List<String> tags, String author, String title) {
@@ -50,12 +49,9 @@ public class PostService {
         }
 
         if (author != null && !author.isEmpty()) {
-            Optional<User> optionalUser = userRepository.findUserByUsername(author);
-            if (optionalUser.isPresent()) {
-                filteredPosts.retainAll(getPostsByAuthor(optionalUser.get()));
-            } else {
-                return null;
-            }
+            User user = userRepository.findUserByUsername(author)
+                    .orElseThrow(() -> new UserNotFoundException("User not found with username " + author));
+            filteredPosts.retainAll(getPostsByAuthor(user));
         }
 
         if (title != null && !title.isEmpty()) {
@@ -65,57 +61,56 @@ public class PostService {
         return filteredPosts;
     }
 
-    public Optional<Post> createPost(String apikey, Post post) {
-        Optional<User> user = userRepository.findById(apikey);
-
-        if(user.isPresent()){
-            post.setAuthor(user.get());
-            return Optional.of(postRepository.save(post));
-        }else{
-            return Optional.empty();
-        }
+    public Post createPost(String apikey, Post post) {
+        User user = userRepository.findById(apikey)
+                .orElseThrow(() -> new UserNotFoundException("User not found with API key " + apikey));
+        post.setAuthor(user);
+        return postRepository.save(post);
     }
 
-    public Post updatePost(Long id, Post updatedPost) {
-        return postRepository.findById(id).map(post -> {
-            if (isValid(updatedPost.getTitle())) {
-                post.setTitle(updatedPost.getTitle());
-            }
-            if (isValid(updatedPost.getContent())) {
-                post.setContent(updatedPost.getContent());
-            }
-            if (updatedPost.getTags() != null && !updatedPost.getTags().isEmpty()) {
-                post.setTags(updatedPost.getTags());
-            }
-            return postRepository.save(post);
-        }).orElseThrow(() -> new RuntimeException("Post not found with id " + id));
+    public Post updatePost(String apikey, Long id, Post updatedPost) {
+        if (!isAuthorizedUser(apikey, id)) {
+            throw new UnauthorizedActionException("User is not authorized to update this post");
+        }
+
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post not found with id " + id));
+
+        if (isValid(updatedPost.getTitle())) {
+            post.setTitle(updatedPost.getTitle());
+        }
+        if (isValid(updatedPost.getContent())) {
+            post.setContent(updatedPost.getContent());
+        }
+        if (updatedPost.getTags() != null && !updatedPost.getTags().isEmpty()) {
+            post.setTags(updatedPost.getTags());
+        }
+        return postRepository.save(post);
     }
 
     private boolean isValid(String value) {
         return value != null && !value.isEmpty();
     }
 
-    public boolean deletePost(Long id) {
+    public boolean deletePost(String apikey, Long id) {
+        if (!isAuthorizedUser(apikey, id)) {
+            throw new UnauthorizedActionException("User is not authorized to delete this post");
+        }
+
         if (postRepository.existsById(id)) {
             postRepository.deleteById(id);
             return true;
         }
-        return false;
+        throw new PostNotFoundException("Post not found with id " + id);
     }
 
-    public boolean isAuthorizedUser(String apikey, Long postId) {
-        var optionalUser = userRepository.findById(apikey);
-        if (optionalUser.isEmpty()) {
-            return false;
-        }
+    private boolean isAuthorizedUser(String apikey, Long postId) {
+        User user = userRepository.findById(apikey)
+                .orElseThrow(() -> new UserNotFoundException("User not found with API key " + apikey));
 
-        var optionalPost = postRepository.findById(postId);
-        if (optionalPost.isEmpty()) {
-            return false;
-        }
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found with id " + postId));
 
-        String usernameOfKey = optionalUser.get().getUsername();
-        String usernameOfPost = optionalPost.get().getAuthor();
-        return usernameOfKey.equals(usernameOfPost);
+        return user.getUsername().equals(post.getAuthor());
     }
 }

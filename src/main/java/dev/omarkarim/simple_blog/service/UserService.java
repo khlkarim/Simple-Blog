@@ -4,9 +4,9 @@ import dev.omarkarim.simple_blog.model.User;
 import dev.omarkarim.simple_blog.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import dev.omarkarim.simple_blog.exception.UserNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -18,16 +18,18 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserByUsername(String username) {
-        return userRepository.findUserByUsername(username);
+    public User getUserByUsername(String username) {
+        return userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username " + username));
     }
 
     public User createUser(User user) {
         return userRepository.save(user);
     }
 
-    public Optional<User> getUserById(String id) {
-        return userRepository.findById(id);
+    public User getUserById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id " + id));
     }
 
     public User updateUser(String id, User updatedUser) {
@@ -42,7 +44,7 @@ public class UserService {
                 user.setNumTel(updatedUser.getNumTel());
             }
             return userRepository.save(user);
-        }).orElseThrow(() -> new RuntimeException("User not found with id " + id));
+        }).orElseThrow(() -> new UserNotFoundException("User not found with id " + id));
     }
 
     private boolean isValid(String value) {
@@ -53,7 +55,8 @@ public class UserService {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
             return true;
+        } else {
+            throw new UserNotFoundException("User not found with id " + id);
         }
-        return false;
     }
 }
