@@ -53,15 +53,18 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    public Comment updateComment(Long id, Comment updatedComment) {
+    public Comment updateComment(String apikey, Long id, Comment updatedComment) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
 
-        comment.setContent(updatedComment.getContent());
+        User user = userRepository.findById(apikey)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        User author = userRepository.findUserByUsername(updatedComment.getAuthor())
-                .orElseThrow(() -> new UserNotFoundException("Author not found"));
-        comment.setAuthor(author);
+        if (!comment.getAuthor().equals(user.getUsername())) {
+            throw new UnauthorizedActionException("User does not own this comment");
+        }
+
+        comment.setContent(updatedComment.getContent());
 
         Post post = postRepository.findById(updatedComment.getPost())
                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
@@ -70,10 +73,17 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    public void deleteComment(Long id) {
-        if (!commentRepository.existsById(id)) {
-            throw new CommentNotFoundException("Comment not found");
+    public void deleteComment(String apikey, Long id) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
+
+        User user = userRepository.findById(apikey)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (!comment.getAuthor().equals(user.getUsername())) {
+            throw new UnauthorizedActionException("User does not own this comment");
         }
+
         commentRepository.deleteById(id);
     }
 }

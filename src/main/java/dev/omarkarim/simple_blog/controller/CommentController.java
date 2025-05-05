@@ -41,13 +41,13 @@ public class CommentController {
         return commentService.createComment(apikey, postId, comment);
     }
 
-    @PutMapping("/{id}")
-    public Comment updateComment(@PathVariable Long id, @RequestBody Comment comment) {
-        return commentService.updateComment(id, comment);
+    @PatchMapping("/{id}")
+    public Comment updateComment(@RequestParam String apikey, @PathVariable Long id, @RequestBody Comment comment) {
+        return commentService.updateComment(apikey, id, comment);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable Long id) {
-        commentService.deleteComment(id);
+    public void deleteComment(@RequestParam String apikey, @PathVariable Long id) {
+        commentService.deleteComment(apikey, id);
     }
 }
