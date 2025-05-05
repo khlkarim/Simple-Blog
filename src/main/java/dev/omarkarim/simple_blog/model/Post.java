@@ -28,7 +28,7 @@ public class Post {
     @ElementCollection
     private List<String> tags;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private User author;
 
     @OneToMany(mappedBy = "post")
