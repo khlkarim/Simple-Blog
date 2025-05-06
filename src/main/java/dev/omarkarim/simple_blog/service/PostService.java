@@ -1,5 +1,6 @@
 package dev.omarkarim.simple_blog.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,11 @@ public class PostService {
             post.setContent(updatedPost.getContent());
         }
         if (updatedPost.getTags() != null && !updatedPost.getTags().isEmpty()) {
-            post.setTags(updatedPost.getTags());
+            if (post.getTags() == null) {
+                post.setTags(new ArrayList<>());
+            }
+            post.getTags().clear();
+            post.getTags().addAll(updatedPost.getTags());
         }
         return postRepository.save(post);
     }

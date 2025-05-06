@@ -66,10 +66,6 @@ public class CommentService {
 
         comment.setContent(updatedComment.getContent());
 
-        Post post = postRepository.findById(updatedComment.getPost())
-                .orElseThrow(() -> new PostNotFoundException("Post not found"));
-        comment.setPost(post);
-
         return commentRepository.save(comment);
     }
 
