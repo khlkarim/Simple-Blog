@@ -17,10 +17,10 @@ public class Comment {
 
     private String content;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Post post;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private User author;
 
     public Comment(){
